@@ -1,0 +1,183 @@
+---
+title: "Exercise 2 - Data Preparation"
+author: Ryan Wesslen
+date: Sept 27, 2016
+output: html_document
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path='Figs/',
+                      echo=TRUE, warning=FALSE, message=FALSE)
+```
+
+### Objective: Analyze the major presidential candidates Tweets
+
+Our goal is to analyze the rhetoric (if you can call it that) of the Tweets for four major political candidates for president: Hillary Clinton, Bernie Sanders, Donald Trump and Ted Cruz.
+
+The dataset we'll use is includes all of the candidates' Tweets between June 2015 to June 2016 and includes about 19,000 Tweets (that's about 8k Tweets per candidate!).
+
+As we mentioned in yesterday's session, there are two ways to run this RMarkdown file: as automatically as a Knit (e.g. to produce a HTML file) or in manually chunks.
+
+If you run it in chunks (as we will in this tutorial), you will need to set your working directory and remove one of the "." from the `read.csv()` and `source()` functions. If you are running it as Knit file, you can leave as is.
+
+#### Step 1: Read in the data. 
+
+Like yesterday, our first steps include setting our working directory (if running as chunks) and loading in our dataset.
+
+```{r}
+#set your personal working directory if you're running as chunks
+#setwd("~/Dropbox/fall-2016-pm-twitter-text/")
+
+#remove one of the "." if you are running as chunks
+raw.tweets <- read.csv("../datasets/pres-tweets.csv", stringsAsFactors = F)
+source('../functions.R')
+```
+
+#### Step 2: Explore the dataset.
+
+Let's explore our dataset. You can either open the dataset or run the `str()` function.
+
+```{r}
+str(raw.tweets)
+```
+
+We have 19,103 Tweets, averaging about 4-5k Tweets per candidate.
+
+#### Step 3: Explore the data
+
+We'll use the `dplyr` package to explore aggregate counts in the dataset.
+
+```{r}
+library(dplyr)
+
+agg_tweets <- raw.tweets %>% group_by(displayName) %>% summarise(Count = n()) %>% arrange(desc(Count))
+
+agg_tweets
+```
+
+Further, let's first plot the Tweet count per candidate by day.
+
+```{r}
+library(ggplot2)
+
+raw.tweets$date <- as.Date(raw.tweets$estTime, "%Y-%m-%d")
+date_tweets <- raw.tweets %>% group_by(date, displayName) %>% summarise(Count = n())
+
+ggplot(date_tweets, aes(date, Count, colour = displayName, group = displayName)) + geom_line()
+```
+
+Unfortunately this is a bit noisy. Let's instead go with month. We'll use the `zoo` package to extract the year-month for all Tweets.
+
+```{r}
+temp <- zoo::as.yearmon(raw.tweets$date)
+
+raw.tweets$yearmonth <- paste(format(temp, "%Y"),format(temp, "%m"))
+
+date_tweets <- raw.tweets %>% group_by(yearmonth, displayName) %>% summarise(Count = n())
+
+ggplot(date_tweets, aes(yearmonth, Count, colour = displayName, group = displayName)) + geom_line()
+```
+
+This is much clearer that Donald Trump is the heaviest Tweeter, with the largest number of Tweets in July 2015 and Oct 2015 with nearly **800 Tweets** per month or about 27 Tweets per day!
+
+#### Step 4: Identify the most common Hashtags and Handles
+
+Find the most common hashtags with the function `getCommonHashtags()`. Like the `timePlot()` function, this function is in the functions.R file. 
+
+For the function, use the Tweet text (body) as the input. 
+
+```{r}
+hashtags <- getCommonHashtags(raw.tweets$body)
+
+head(hashtags, 25)
+```
+
+What are the top 25 hashtags? Which are Panther related?
+
+Repeat the same exercise but with the function `getCommonHandles()` to find the most common handles.
+
+```{r}
+handles <- getCommonHandles(raw.tweets$body)
+
+head(handles, 25)
+```
+
+#### Step 5: Favorite and Retweet Count
+
+This data also includes the number of times each Tweet was favorited (liked) and retweeted. This is a measurement of the response on social media by all users.
+
+Let's first explore the distribution of Favorited by each candidate using a box and whisker plot.
+
+```{r}
+library(ggplot2)
+ggplot(raw.tweets, aes(displayName, favoritesCount)) + geom_boxplot() +
+  ylab("Favorited Tweet Count (Likes)") 
+```
+
+Unfortunately, this is distorted because there's a huge tail. Let's use change the Y-axis to log-based.
+
+```{r}
+ggplot(raw.tweets, aes(displayName, favoritesCount)) + geom_boxplot() +
+  ylab("Favorited (Likes) Tweet Count - Log Scale") + scale_y_log10()
+```
+
+Ah - so we see that Donald Trump on average has a larger response than the other candidates during this period. Interestingly, Bernie has (on average) the second most number Tweets per candidate.
+
+Let's also plot the number of Retweets.
+
+```{r}
+ggplot(raw.tweets, aes(displayName, retweetCount)) + geom_boxplot() +
+  ylab("Retweet Tweet Count - Log Scale") + scale_y_log10()
+```
+
+If we want to get the actual summary statistics, we can use the `psych` package:
+
+```{r}
+library(psych)
+describeBy(raw.tweets$favoritesCount, group = raw.tweets$displayName)
+describeBy(raw.tweets$retweetCount, group = raw.tweets$displayName)
+```
+
+Let's now get the top 10 Tweets for each candidate by the largest number of "Favorites":
+
+```{r}
+candidates <- c("Bernie Sanders","Hillary Clinton","Donald J. Trump", "Ted Cruz")
+
+for (i in 1:4){
+  ctweets <- raw.tweets[raw.tweets$displayName == candidates[i],]
+  row <- order(-ctweets$favoritesCount)
+  print(candidates[i], row.names = FALSE)
+  print(ctweets[row[1:10],c(4,2,5,7)], row.names = FALSE)
+}
+dev.off()
+```
+
+FYI - there are much better ways to display results than the `print` function. Consider using the `DT` or `gridExtra` for future tables.
+
+Let's combine our analysis from the time series plots and the Favorite counts to create plots for the candidates.
+
+```{r}
+#Bernie
+ctweets <- raw.tweets[raw.tweets$displayName == "Bernie Sanders",]
+ggplot(raw.tweets, aes(yearmonth, favoritesCount)) + geom_boxplot() + 
+  ggtitle("Bernie Sanders") + 
+  ylab("Favorited (Likes) Tweet Count - Log Scale") + scale_y_log10()
+
+#Hillary
+ctweets <- raw.tweets[raw.tweets$displayName == "Hillary Clinton",]
+ggplot(raw.tweets, aes(yearmonth, favoritesCount)) + geom_boxplot() + 
+  ggtitle("Hillary Clinton") + 
+  ylab("Favorited (Likes) Tweet Count - Log Scale") + scale_y_log10()
+
+#Trump
+ctweets <- raw.tweets[raw.tweets$displayName == "Donald J. Trump",]
+ggplot(raw.tweets, aes(yearmonth, favoritesCount)) + geom_boxplot() + 
+  ggtitle("Donald J. Trump") + 
+  ylab("Favorited (Likes) Tweet Count - Log Scale") + scale_y_log10()
+
+#Cruz
+ctweets <- raw.tweets[raw.tweets$displayName == "Ted Cruz",]
+ggplot(raw.tweets, aes(yearmonth, favoritesCount)) + geom_boxplot() + 
+  ggtitle("Ted Cruz") + 
+  ylab("Favorited (Likes) Tweet Count - Log Scale") + scale_y_log10()
+```

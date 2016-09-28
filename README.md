@@ -40,7 +40,10 @@ This workshop provides an introduction to text analysis using R, focusing on Twi
 | Day 2: Wed Sept 28  | Topics                                                  |
 | ------------------- | ------------------------------------------------------- |
 | Lecture             | Introduction to text analysis with `quanteda`           |
-| Case Study          | [Analyzing Presidential Candidate Tweets](Day2/exercise2.Rmd) |
+| Case Study 1        | [Analyzing Pres Candidate Tweets: Data Prep](Day2/exercise2-dataprep.Rmd) |
+| Case Study 2        | [Text Visualizations](Day2/exercise2-textvisual.Rmd) |
+| Case Study 3        | [Sentiment Analysis](Day2/exercise2-sentiment.Rmd) |
+| Case Study 4        | [Supervised Machine Learning](Day2/exercise2-supervised.Rmd) |
 
 | Day 3: Thur Sept 29 | Topics                                                  |
 | ------------------- | ------------------------------------------------------- |

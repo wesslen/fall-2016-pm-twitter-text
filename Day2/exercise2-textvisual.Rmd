@@ -1,0 +1,133 @@
+---
+title: "Exercise 2 - Data Preparation"
+author: Ryan Wesslen
+date: Sept 27, 2016
+output: html_document
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path='Figs/',
+                      echo=TRUE, warning=FALSE, message=FALSE)
+```
+
+### Objective: Analyze the major presidential candidates Tweets
+
+Rerun the the data (you can skip this if you still have the datasets open).
+
+#### Step 1: Read in the data. 
+
+```{r}
+#set your personal working directory if you're running as chunks
+#setwd("~/Dropbox/fall-2016-pm-twitter-text/")
+
+#remove one of the "." if you are running as chunks
+raw.tweets <- read.csv("../datasets/pres-tweets.csv", stringsAsFactors = F)
+source('../functions.R')
+```
+
+#### Step 2: Text Analysis with `quanteda`
+
+We will use the `quanteda` package 
+
+```{r}
+library(quanteda); library(RColorBrewer)
+```
+
+To simplify our results, let's only look at Tweets within the last six months (i.e. in 2016).
+
+```{r}
+tweets <- raw.tweets[substring(raw.tweets$estTime,1,4)=="2016",]
+table(tweets$displayName)
+```
+
+The `quanteda` package allows you to take a text (character) column and convert it into a DFM (data feature matrix, a generalization of a document-term matrix).
+
+To do this, first, we have to use the `corpus` function to create our corpus. The corpus is data object that specializes in handling sparse (text) data.
+
+```{r}
+MyCorpus <- corpus(tweets$body)
+```
+
+You can retrieve any of the documents by using the following command:
+
+```{r}
+MyCorpus$documents[[1]][1]
+```
+
+With our corpus, let's now create the `dfm` object. This step facilitates data pre-processing steps including removing stop words (words with little meaning) with the `ignoredFeature` parameter. We can also expand beyond considering single word terms to consider two-word terms (bigrams) by using the `ngrams` parameter.
+
+```{r}
+dfm <- dfm(MyCorpus, 
+           ignoredFeatures = c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can", "u"),
+           ngrams=c(1,2))
+```
+
+With our `dfm`, let's view our top 25 terms in our corpus, using the `topfeatures()` function. 
+
+```{r}
+topfeatures(dfm,25)
+```
+
+Let's create a word cloud for our top 100 terms.
+
+```{r}
+plot(dfm, scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
+     random.order = F, rot.per=0.1, max.words=100)
+```
+
+We can also reweight our plot by TF-IDF...
+
+```{r}
+plot(tfidf(dfm), scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
+     random.order = F, rot.per=0.1, max.words=100)
+```
+
+
+### Step 3: Word Associations
+
+Let's now explore word associations.
+
+```{r}
+DTM <- as.DocumentTermMatrix(dfm)
+
+library(tm)
+
+# Word Associations
+findAssocs(DTM, "cruz", 0.3)
+
+findAssocs(DTM, "hillary", 0.2)
+
+findAssocs(DTM, "great", 0.2)
+```
+
+Now let's cluster the words...
+
+```{r}
+twdfm <- trim(dfm, minCount=180)
+wordDfm <- sort(weight(twdfm, "tfidf"))
+wordDfm <- t(wordDfm)[1:50,]  # because transposed
+wordDistMat <- dist(wordDfm)
+wordCluster <- hclust(wordDistMat)
+plot(wordCluster, xlab="", main="tf-idf Frequency weighting")
+```
+
+### Step 4: Aggregate by User
+
+Maybe instead of keeping each document as a Tweet, we want to explore the Tweets and treat them as one document per Candidate. In this way, we would group (or aggregate) each of the candidates' Tweets into one document. This will eliminate time but will help us explore the words' of each candidate as a whole.
+
+To do this, we must redo our `dfm` but use the `groups` option. Before that, we need to add the covariate `displayName` to our corpus. We will call it "Candidate".
+
+```{r}
+docvars(MyCorpus, "Candidate") <- tweets$displayName
+
+dfm <- dfm(MyCorpus, groups = "Candidate",
+           ignoredFeatures = c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can", "u"),
+           ngrams=c(1,2))
+```
+
+Now, let's also explore the word clouds using the `comparison` option...
+
+```{r}
+plot(dfm, comparison = T, scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
+     random.order = F, rot.per=0.1, max.words=100)
+```
