@@ -16,7 +16,7 @@ We'll be working with tweets from the four major US presidential candidates' Twi
 
 Let's create an algorithm to determine what words most distinctively are used by Donald Trump relative to Ted Cruz.
 
-This material was created by workshop materials created by Pablo Barbera.
+This material was created from workshop materials created by Pablo Barbera.
 
 ```{r}
 #set your personal working directory if you're running as chunks
