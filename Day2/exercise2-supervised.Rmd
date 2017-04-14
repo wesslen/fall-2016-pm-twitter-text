@@ -6,8 +6,7 @@ output: html_document
 ---
 
 ```{r global_options, include=FALSE}
-knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path='Figs/',
-                      echo=TRUE, warning=FALSE, message=FALSE)
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
 ```
 
 ### Supervised machine learning
@@ -39,8 +38,13 @@ Create the dfm and trim it so that only tokens that appear in 10 or more tweets 
 ```{r}
 library(quanteda)
 twcorpus <- corpus(tweets$body)
-twdfm <- dfm(twcorpus, ignoredFeatures=c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can"))
-twdfm <- trim(twdfm, minDoc = 10)
+twdfm <- dfm(twcorpus, 
+             remove=c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can"),
+             removeSymbols = TRUE,
+             removePunct = TRUE,
+             removeURL = TRUE
+             )
+twdfm <- dfm_trim(twdfm, min_count = 10)
 ```
 
 And split the dataset into training and test set. We'll go with 80% training and 20% set. Note the use of a random seed to make sure our results are replicable.

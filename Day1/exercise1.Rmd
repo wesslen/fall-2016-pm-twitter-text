@@ -6,8 +6,7 @@ output: html_document
 ---
 
 ```{r global_options, include=FALSE}
-knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path='Figs/',
-                      echo=TRUE, warning=FALSE, message=FALSE)
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
 ```
 
 ### Objective: Keyword Search for Panther Tweets
@@ -156,14 +155,17 @@ With our corpus, let's now create the `dfm` object. This step facilitates data p
 
 ```{r}
 dfm <- dfm(MyCorpus, 
-           ignoredFeatures = c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can", "u"),
-           ngrams=c(1,2))
+           remove = c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can", "u"),
+           removeNumbers = TRUE, 
+           removePunct = TRUE,
+           removeSymbols = TRUE,
+           ngrams=1L)
 ```
 
 Let's look at the first Tweet and 10 terms.
 
 ```{r}
-sort(dfm)[1,1:10]
+dfm_sort(dfm)[1,1:10]
 ```
 
 With our `dfm`, let's view our top 25 terms in our corpus, using the `topfeatures()` function. 
@@ -179,7 +181,7 @@ But what's clear is that there are other terms that appear to relevant: e.g. #ca
 Let's consider what are all the words in these panther tweets by using a word cloud:
 
 ```{r}
-plot(dfm, scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
+textplot_wordcloud(dfm, scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
      random.order = F, rot.per=0.1, max.words=100)
 ```
 
@@ -222,12 +224,15 @@ MyCorpus <- corpus(panther.tweets$body)
 docvars(MyCorpus) <- data.frame(geo.type=panther.tweets$geo.type)
 
 dfm <- dfm(MyCorpus, 
-           ignoredFeatures = c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can", "u"),
-           ngrams=c(1,2))
+           remove = c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can", "u"),
+           removeNumbers = TRUE, 
+           removePunct = TRUE,
+           removeSymbols = TRUE,
+           ngrams=1L)
 
 topfeatures(dfm)
 
-plot(dfm, scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
+textplot_wordcloud(dfm, scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
      random.order = F, rot.per=0.1, max.words=100)
 ```
 
@@ -238,9 +243,15 @@ Now, let's use our `geo.type` field to compare the words being used
 Rerun the dfm but this time add in the geo.type as a group. Run a comparison word cloud (`comparison = TRUE`). This may take a few minutes.
 
 ```{r}
-pnthrdfm <- dfm(MyCorpus, groups = "geo.type", ignoredFeatures = c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can", "u"), removeTwitter = F, ngrams=c(1,2))
+pnthrdfm <- dfm(MyCorpus, 
+                groups = "geo.type", 
+                remove = c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can", "u"), 
+                removeNumbers = TRUE, 
+                removePunct = TRUE,
+                removeSymbols = TRUE,
+                ngrams=1L)
 
-plot(pnthrdfm, comparison = TRUE, scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
+textplot_wordcloud(pnthrdfm, comparison = TRUE, scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
      random.order = F, rot.per=0.1, max.words=100)
 ```
 
@@ -253,10 +264,19 @@ timePlot(panther.tweets[panther.tweets$geo.type == "Point",], smooth = FALSE)
 timePlot(panther.tweets[panther.tweets$geo.type == "Polygon",], smooth = FALSE)
 ```
 
-We can also use a function called `heatmapPlot()` to plot the geolocation of the Point Tweets. 
+Let's use the `leaflet` package to plot the points.
 
 ```{r}
-heatmapPlot(panther.tweets[panther.tweets$geo.type == "Point",])
+library(leaflet) #run if you do not have it already, install.packages("leaflet")
+
+t <- subset(panther.tweets, geo.type == "Point")
+
+# fyi the lat and long columns are mislabelled
+leaflet() %>%
+  addTiles() %>%
+  addCircleMarkers(lng=t$point_lat, lat=t$point_long,   popup = t$body, #color = pal(points$generator),
+             stroke = FALSE, fillOpacity = 0.5, radius = 10, clusterOptions = markerClusterOptions()
+             )
 ```
 
 Where are most of the point Tweets? Of course close to the stadium.
@@ -267,14 +287,17 @@ There are also additional pre-processing steps can sometimes improve results. Ru
 
 ```{r}
 dfm <- dfm(MyCorpus, 
-           ignoredFeatures = c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can", "u"),
-           stem = T, 
-           removeTwitter = T, 
-           ngrams=c(1,3))
+           remove = c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can", "u"),
+           stem = TRUE, 
+           removeNumbers = TRUE, 
+           removePunct = TRUE,
+           removeSymbols = TRUE,
+           removeTwitter = TRUE, 
+           ngrams=1L)
 
 topfeatures(dfm)
 
-plot(dfm, scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
+textplot_wordcloud(dfm, scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
      random.order = F, rot.per=0.1, max.words=100)
 ```
 

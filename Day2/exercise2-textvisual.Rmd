@@ -6,8 +6,7 @@ output: html_document
 ---
 
 ```{r global_options, include=FALSE}
-knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path='Figs/',
-                      echo=TRUE, warning=FALSE, message=FALSE)
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
 ```
 
 ### Objective: Analyze the major presidential candidates Tweets
@@ -58,8 +57,11 @@ With our corpus, let's now create the `dfm` object. This step facilitates data p
 
 ```{r}
 dfm <- dfm(MyCorpus, 
-           ignoredFeatures = c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can", "u"),
-           ngrams=c(1,2))
+           remove = c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can", "u"),
+           removeNumbers = TRUE, 
+           removePunct = TRUE,
+           removeSymbols = TRUE,
+           ngrams=1L)
 ```
 
 With our `dfm`, let's view our top 25 terms in our corpus, using the `topfeatures()` function. 
@@ -71,14 +73,14 @@ topfeatures(dfm,25)
 Let's create a word cloud for our top 100 terms.
 
 ```{r}
-plot(dfm, scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
+textplot_wordcloud(dfm, scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
      random.order = F, rot.per=0.1, max.words=100)
 ```
 
 We can also reweight our plot by TF-IDF...
 
 ```{r}
-plot(tfidf(dfm), scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
+textplot_wordcloud(tfidf(dfm), scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
      random.order = F, rot.per=0.1, max.words=100)
 ```
 
@@ -103,8 +105,8 @@ findAssocs(DTM, "great", 0.2)
 Now let's cluster the words...
 
 ```{r}
-twdfm <- trim(dfm, minCount=180)
-wordDfm <- sort(weight(twdfm, "tfidf"))
+twdfm <- dfm_trim(dfm, min_count=180)
+wordDfm <- dfm_sort(dfm_weight(twdfm, "tfidf"))
 wordDfm <- t(wordDfm)[1:50,]  # because transposed
 wordDistMat <- dist(wordDfm)
 wordCluster <- hclust(wordDistMat)
@@ -121,13 +123,16 @@ To do this, we must redo our `dfm` but use the `groups` option. Before that, we 
 docvars(MyCorpus, "Candidate") <- tweets$displayName
 
 dfm <- dfm(MyCorpus, groups = "Candidate",
-           ignoredFeatures = c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can", "u"),
-           ngrams=c(1,2))
+           remove = c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can", "u"),
+           removeNumbers = TRUE, 
+           removePunct = TRUE,
+           removeSymbols = TRUE,
+           ngrams=1L)
 ```
 
 Now, let's also explore the word clouds using the `comparison` option...
 
 ```{r}
-plot(dfm, comparison = T, scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
+textplot_wordcloud(dfm, comparison = T, scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
      random.order = F, rot.per=0.1, max.words=100)
 ```
