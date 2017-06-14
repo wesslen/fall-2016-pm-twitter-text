@@ -6,8 +6,7 @@ output: html_document
 ---
 
 ```{r global_options, include=FALSE}
-knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path='Figs/',
-                      echo=TRUE, warning=FALSE, message=FALSE)
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
 ```
 
 ### Unsupervised machine learning
@@ -32,6 +31,7 @@ Let's read in our Charlotte sample dataset.
 tweets <- read.csv('../datasets/CharlotteTweets20Sample.csv', stringsAsFactors=F)
 source('../functions.R')
 
+#updated for quanteda version 0.9.9-50
 library(quanteda)
 twcorpus <- corpus(tweets$body)
 ```
@@ -42,8 +42,15 @@ Let's create the DFM object and trim all words used less than 40 times.
 
 ```{r}
 docvars(twcorpus, "actor.id") <- as.character(tweets$actor.id) 
-twdfm <- dfm(twcorpus, groups = "actor.id", ignoredFeatures = c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can", "u"), removeTwitter = TRUE, ngrams=c(1,2))
-twdfm <- trim(twdfm, minDoc = 3)
+twdfm <- dfm(twcorpus, 
+             groups = "actor.id", 
+             remove = c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can", "u"), 
+             remove_punct = TRUE, 
+             remove_numbers = TRUE, 
+             remove_symbols = TRUE,
+             remove_url = TRUE,
+             ngrams= 1L)
+twdfm <- dfm_trim(twdfm, min_docfreq = 3)
 ```
 
 Let's look at the top 50 words.
@@ -61,8 +68,12 @@ Let's do some exploratory analysis to understand the content.
 ```{r}
 library(RColorBrewer)
 
-plot(twdfm, scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
-     random.order = F, rot.per=0.1, max.words=250)
+textplot_wordcloud(twdfm, 
+                   scale=c(3.5, .75), 
+                   colors=brewer.pal(8, "Dark2"), 
+                   random.order = F, 
+                   rot.per=0.1, 
+                   max.words=250)
 ```
 
 Next, we'll calculate similarities between words. 
@@ -70,17 +81,17 @@ Next, we'll calculate similarities between words.
 For example:
 
 ```{r}
-similarity(twdfm, c("fair", "health", "terror"), method = "cosine", margin = "features", n = 20)
+textstat_simil(twdfm, c("fair", "health", "terror"), method = "cosine", margin = "features", n = 20)
 
-similarity(twdfm, selection = "hate", method = "cosine", margin = "features", n = 20)
+textstat_simil(twdfm, selection = "hate", method = "cosine", margin = "features", n = 20)
 
-terms <- similarity(twdfm, selection = "hate", method = "cosine", margin = "features", n = 20)
+terms <- textstat_simil(twdfm, selection = "hate", method = "cosine", margin = "features", n = 20)
 ```
 
 We can even calculate document (i.e. user) similiarities (note I kept the actor ID but the users could be converted to display their username).
 
 ```{r}
-rows <- similarity(twdfm, c("15493908"), method = "cosine", margin = "documents", n = 20)
+rows <- textstat_simil(twdfm, c("15493908"), method = "cosine", margin = "documents", n = 20)
 
 rows <- as.matrix(rows)
 ```
@@ -147,10 +158,10 @@ probtopics <- data.frame(postlist$topics)
 colnames(probtopics) <- paste("Topic",1:K)
 ```
 
-Next, let's find the "expert" for Topic 7.
+Next, let's find the "expert" for Topic 8.
 
 ```{r}
-filter.topic <- "Topic 7"
+filter.topic <- "Topic 8"
 
 row <- order(-probtopics[,filter.topic])
 actorid <- rownames(probtopics[row[1],])
@@ -170,5 +181,5 @@ Further analysis could take as a covariate:
 
 3.  Profile description keywords (e.g. husband, wife, student, etc.)
 
-A new extension to LDA has been created ("structural topic model") by social scientists to create a framework to consider covariates impact on topic model results. The package `stm` provides these tools and is a great future 
+A new extension to LDA has been created ("structural topic model") by social scientists to create a framework to consider covariates impact on topic model results. For more details on running more advanced versions of LDA like CTM and STM, I created a newer [workshop on topic modeling](https://github.com/wesslen/Topic-Modeling-Workshop-with-R).
 

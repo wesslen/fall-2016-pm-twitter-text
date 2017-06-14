@@ -50,7 +50,10 @@ We'll use the `dplyr` package to explore aggregate counts in the dataset.
 ```{r}
 library(dplyr)
 
-agg_tweets <- raw.tweets %>% group_by(displayName) %>% summarise(Count = n()) %>% arrange(desc(Count))
+agg_tweets <- raw.tweets %>% 
+  group_by(displayName) %>% 
+  summarise(Count = n()) %>% 
+  arrange(desc(Count))
 
 agg_tweets
 ```
@@ -61,9 +64,12 @@ Further, let's first plot the Tweet count per candidate by day.
 library(ggplot2)
 
 raw.tweets$date <- as.Date(raw.tweets$estTime, "%Y-%m-%d")
-date_tweets <- raw.tweets %>% group_by(date, displayName) %>% summarise(Count = n())
+date_tweets <- raw.tweets %>% 
+  group_by(date, displayName) %>% 
+  summarise(Count = n())
 
-ggplot(date_tweets, aes(date, Count, colour = displayName, group = displayName)) + geom_line()
+ggplot(date_tweets, aes(date, Count, colour = displayName, group = displayName)) + 
+  geom_line()
 ```
 
 Unfortunately this is a bit noisy. Let's instead go with month. We'll use the `zoo` package to extract the year-month for all Tweets.
@@ -73,9 +79,12 @@ temp <- zoo::as.yearmon(raw.tweets$date)
 
 raw.tweets$yearmonth <- paste(format(temp, "%Y"),format(temp, "%m"))
 
-date_tweets <- raw.tweets %>% group_by(yearmonth, displayName) %>% summarise(Count = n())
+date_tweets <- raw.tweets %>% 
+  group_by(yearmonth, displayName) %>% 
+  summarise(Count = n())
 
-ggplot(date_tweets, aes(yearmonth, Count, colour = displayName, group = displayName)) + geom_line()
+ggplot(date_tweets, aes(yearmonth, Count, colour = displayName, group = displayName)) + 
+  geom_line()
 ```
 
 This is much clearer that Donald Trump is the heaviest Tweeter, with the largest number of Tweets in July 2015 and Oct 2015 with nearly **800 Tweets** per month or about 27 Tweets per day!
@@ -110,14 +119,16 @@ Let's first explore the distribution of Favorited by each candidate using a box 
 
 ```{r}
 library(ggplot2)
-ggplot(raw.tweets, aes(displayName, favoritesCount)) + geom_boxplot() +
+ggplot(raw.tweets, aes(displayName, favoritesCount)) + 
+  geom_boxplot() +
   ylab("Favorited Tweet Count (Likes)") 
 ```
 
 Unfortunately, this is distorted because there's a huge tail. Let's use change the Y-axis to log-based.
 
 ```{r}
-ggplot(raw.tweets, aes(displayName, favoritesCount)) + geom_boxplot() +
+ggplot(raw.tweets, aes(displayName, favoritesCount)) + 
+  geom_boxplot() +
   ylab("Favorited (Likes) Tweet Count - Log Scale") + scale_y_log10()
 ```
 
@@ -126,7 +137,8 @@ Ah - so we see that Donald Trump on average has a larger response than the other
 Let's also plot the number of Retweets.
 
 ```{r}
-ggplot(raw.tweets, aes(displayName, retweetCount)) + geom_boxplot() +
+ggplot(raw.tweets, aes(displayName, retweetCount)) + 
+  geom_boxplot() +
   ylab("Retweet Tweet Count - Log Scale") + scale_y_log10()
 ```
 
@@ -159,25 +171,33 @@ Let's combine our analysis from the time series plots and the Favorite counts to
 ```{r}
 #Bernie
 ctweets <- raw.tweets[raw.tweets$displayName == "Bernie Sanders",]
-ggplot(raw.tweets, aes(yearmonth, favoritesCount)) + geom_boxplot() + 
+ggplot(raw.tweets, aes(yearmonth, favoritesCount)) + 
+  geom_boxplot() + 
   ggtitle("Bernie Sanders") + 
-  ylab("Favorited (Likes) Tweet Count - Log Scale") + scale_y_log10()
+  ylab("Favorited (Likes) Tweet Count - Log Scale") + 
+  scale_y_log10()
 
 #Hillary
 ctweets <- raw.tweets[raw.tweets$displayName == "Hillary Clinton",]
-ggplot(raw.tweets, aes(yearmonth, favoritesCount)) + geom_boxplot() + 
+ggplot(raw.tweets, aes(yearmonth, favoritesCount)) + 
+  geom_boxplot() + 
   ggtitle("Hillary Clinton") + 
-  ylab("Favorited (Likes) Tweet Count - Log Scale") + scale_y_log10()
+  ylab("Favorited (Likes) Tweet Count - Log Scale") + 
+  scale_y_log10()
 
 #Trump
 ctweets <- raw.tweets[raw.tweets$displayName == "Donald J. Trump",]
-ggplot(raw.tweets, aes(yearmonth, favoritesCount)) + geom_boxplot() + 
+ggplot(raw.tweets, aes(yearmonth, favoritesCount)) + 
+  geom_boxplot() + 
   ggtitle("Donald J. Trump") + 
-  ylab("Favorited (Likes) Tweet Count - Log Scale") + scale_y_log10()
+  ylab("Favorited (Likes) Tweet Count - Log Scale") + 
+  scale_y_log10()
 
 #Cruz
 ctweets <- raw.tweets[raw.tweets$displayName == "Ted Cruz",]
-ggplot(raw.tweets, aes(yearmonth, favoritesCount)) + geom_boxplot() + 
+ggplot(raw.tweets, aes(yearmonth, favoritesCount)) + 
+  geom_boxplot() + 
   ggtitle("Ted Cruz") + 
-  ylab("Favorited (Likes) Tweet Count - Log Scale") + scale_y_log10()
+  ylab("Favorited (Likes) Tweet Count - Log Scale") + 
+  scale_y_log10()
 ```

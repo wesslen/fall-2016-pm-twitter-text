@@ -6,8 +6,7 @@ output: html_document
 ---
 
 ```{r global_options, include=FALSE}
-knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path='Figs/',
-                      echo=TRUE, warning=FALSE, message=FALSE)
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
 ```
 
 #### Dictionary methods
@@ -22,7 +21,6 @@ Let's apply this technique in the context of our running example.
 #set your personal working directory if you're running as chunks
 #setwd("~/Dropbox/fall-2016-pm-twitter-text/")
 
-#remove one of the "." if you are running as chunks
 tweets <- read.csv("../datasets/pres-tweets.csv", stringsAsFactors = F)
 source('../functions.R')
 ```

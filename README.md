@@ -40,15 +40,15 @@ This workshop provides an introduction to text analysis using R, focusing on Twi
 | Day 2: Wed Sept 28  | Topics                                                  |
 | ------------------- | ------------------------------------------------------- |
 | Lecture             | Introduction to text analysis with `quanteda`           |
-| Case Study 1        | [Analyzing Pres Candidate Tweets: Data Prep](https://github.com/wesslen/fall-2016-pm-twitter-text/blob/master/Day2/exercise2-dataprep.html) |
-| Case Study 2        | [Text Visualizations](https://github.com/wesslen/fall-2016-pm-twitter-text/blob/master/Day2/exercise2-textvisual.html) |
-| Case Study 3        | [Sentiment Analysis](https://github.com/wesslen/fall-2016-pm-twitter-text/blob/master/Day2/exercise2-sentiment.html) |
-| Case Study 4        | [Supervised Machine Learning](https://github.com/wesslen/fall-2016-pm-twitter-text/blob/master/Day2/exercise2-supervised.html) |
+| Case Study 1        | [Analyzing Pres Candidate Tweets: Data Prep](https://htmlpreview.github.io/?https://github.com/wesslen/fall-2016-pm-twitter-text/blob/master/Day2/exercise2-dataprep.html) |
+| Case Study 2        | [Text Visualizations](https://htmlpreview.github.io/?https://github.com/wesslen/fall-2016-pm-twitter-text/blob/master/Day2/exercise2-textvisual.html) |
+| Case Study 3        | [Sentiment Analysis](https://htmlpreview.github.io/?https://github.com/wesslen/fall-2016-pm-twitter-text/blob/master/Day2/exercise2-sentiment.html) |
+| Case Study 4        | [Supervised Machine Learning](https://htmlpreview.github.io/?https://github.com/wesslen/fall-2016-pm-twitter-text/blob/master/Day2/exercise2-supervised.html) |
 
 | Day 3: Thur Sept 29 | Topics                                                  |
 | ------------------- | ------------------------------------------------------- |
 | Lecture             | Topic modeling with `topicmodels`                       |
-| Case Study          | [Analyzing Charlotte Twitter Topics](https://github.com/wesslen/fall-2016-pm-twitter-text/blob/master/Day3/exercise3.html)|
+| Case Study          | [Analyzing Charlotte Twitter Topics](https://htmlpreview.github.io/?https://github.com/wesslen/fall-2016-pm-twitter-text/blob/master/Day3/exercise3.html)|
 
 
 ## Setup and Preparation

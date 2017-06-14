@@ -1,7 +1,7 @@
 ---
 title: "Exercise 2 - Data Preparation"
 author: Ryan Wesslen
-date: Sept 27, 2016
+date: June 15, 2017
 output: html_document
 ---
 
@@ -29,6 +29,7 @@ source('../functions.R')
 We will use the `quanteda` package 
 
 ```{r}
+# updated for quanteda 0.9.9.50
 library(quanteda); library(RColorBrewer)
 ```
 
@@ -58,9 +59,9 @@ With our corpus, let's now create the `dfm` object. This step facilitates data p
 ```{r}
 dfm <- dfm(MyCorpus, 
            remove = c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can", "u"),
-           removeNumbers = TRUE, 
-           removePunct = TRUE,
-           removeSymbols = TRUE,
+           remove_numbers = TRUE, 
+           remove_punct = TRUE,
+           remove_symbols = TRUE,
            ngrams=1L)
 ```
 
@@ -72,14 +73,14 @@ topfeatures(dfm,25)
 
 Let's create a word cloud for our top 100 terms.
 
-```{r}
+```{r warning=FALSE}
 textplot_wordcloud(dfm, scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
      random.order = F, rot.per=0.1, max.words=100)
 ```
 
 We can also reweight our plot by TF-IDF...
 
-```{r}
+```{r warning=FALSE}
 textplot_wordcloud(tfidf(dfm), scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
      random.order = F, rot.per=0.1, max.words=100)
 ```
@@ -122,17 +123,25 @@ To do this, we must redo our `dfm` but use the `groups` option. Before that, we 
 ```{r}
 docvars(MyCorpus, "Candidate") <- tweets$displayName
 
-dfm <- dfm(MyCorpus, groups = "Candidate",
+dfm <- dfm(MyCorpus, 
+           groups = "Candidate", # add in groups
            remove = c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can", "u"),
-           removeNumbers = TRUE, 
-           removePunct = TRUE,
-           removeSymbols = TRUE,
+           remove_numbers = TRUE, 
+           remove_punct = TRUE,
+           remove_symbols = TRUE,
            ngrams=1L)
 ```
 
 Now, let's also explore the word clouds using the `comparison` option...
 
-```{r}
-textplot_wordcloud(dfm, comparison = T, scale=c(3.5, .75), colors=brewer.pal(8, "Dark2"), 
-     random.order = F, rot.per=0.1, max.words=100)
+```{r warning=FALSE}
+textplot_wordcloud(dfm, 
+                   comparison = T, # add in comparison group
+                   scale=c(2, .5), # scale from largest to smallest words
+                   colors=brewer.pal(8, "Dark2"), # color by partition
+                   random.order = F, # randomize order
+                   rot.per=0, # proportion of words 90 degrees
+                   title.size=1, # title labels
+                   max.words=300)
 ```
+

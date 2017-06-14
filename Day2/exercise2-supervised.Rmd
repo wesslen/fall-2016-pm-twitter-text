@@ -1,7 +1,7 @@
 ---
 title: "Supervised machine learning"
-author: Ryan Wesslen (modified)
-date: Sept 27, 2016
+author: Ryan Wesslen
+date: Sept 27, 2017
 output: html_document
 ---
 
@@ -15,13 +15,12 @@ We'll be working with tweets from the four major US presidential candidates' Twi
 
 Let's create an algorithm to determine what words most distinctively are used by Donald Trump relative to Ted Cruz.
 
-This material was created from workshop materials created by Pablo Barbera.
+This example was created from workshop materials created by Pablo Barbera.
 
 ```{r}
 #set your personal working directory if you're running as chunks
 #setwd("~/Dropbox/fall-2016-pm-twitter-text/")
 
-#remove one of the "." if you are running as chunks
 tweets <- read.csv("../datasets/pres-tweets.csv", stringsAsFactors = F)
 tweets <- subset(tweets, displayName %in% c("Donald J. Trump","Ted Cruz"))
 tweets$trump <- ifelse(tweets$displayName=="Donald J. Trump", 0, 1)
@@ -36,13 +35,14 @@ tweets$body <- gsub('@[0-9_A-Za-z]+', '@', tweets$body)
 Create the dfm and trim it so that only tokens that appear in 10 or more tweets are included.
 
 ```{r}
+# updated for quanteda 0.9.9.50
 library(quanteda)
 twcorpus <- corpus(tweets$body)
 twdfm <- dfm(twcorpus, 
              remove=c(stopwords("english"), "t.co", "https", "rt", "amp", "http", "t.c", "can"),
-             removeSymbols = TRUE,
-             removePunct = TRUE,
-             removeURL = TRUE
+             remove_numbers = TRUE, 
+             remove_symbols = TRUE,
+             remove_url = TRUE
              )
 twdfm <- dfm_trim(twdfm, min_count = 10)
 ```
