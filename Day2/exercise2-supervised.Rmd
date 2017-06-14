@@ -1,7 +1,7 @@
 ---
 title: "Supervised machine learning"
 author: Ryan Wesslen
-date: Sept 27, 2017
+date: June 15, 2017
 output: html_document
 ---
 
